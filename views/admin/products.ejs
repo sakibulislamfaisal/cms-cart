@@ -4,7 +4,7 @@
 <a href="/admin/products/add-product" class="btn btn-primary">Add a new product</a>
 <br><br>
 
-<% if (count > 0) { %>
+
 
 <table class="table table-striped alignmiddle">
 
@@ -36,10 +36,9 @@
         </tr>
         <% }); %>
     </tbody>
+  
 </table>
 
-<% } else {%>
-<h3 class="text-center">There are no products.</h3>
-<% }%>
 
+    
 <%- include('../_layouts/adminfooter') %>

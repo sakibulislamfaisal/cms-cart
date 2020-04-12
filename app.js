@@ -5,7 +5,7 @@ var config = require('./config/database');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 var expressValidator = require('express-validator');
-var fileUpload = require('express-fileupload');
+const fileUpload = require('express-fileupload');
 
 
 // Connect to db
@@ -16,6 +16,30 @@ db.once('open', function () {
     console.log('Connected to MongoDB Database');
 });
 
+
+// Get Page Model
+var Page = require('./models/page');
+
+// Get all pages to pass to header.ejs
+Page.find({}).sort({sorting: 1}).exec(function (err, pages) {
+    if (err) {
+        console.log(err);
+    } else {
+        app.locals.pages = pages;
+    }
+});
+
+// Get Category Model
+var Category = require('./models/category');
+
+// Get all categories to pass to header.ejs
+Category.find(function (err, categories) {
+    if (err) {
+        console.log(err);
+    } else {
+        app.locals.categories = categories;
+    }
+});
 
 
 
@@ -42,6 +66,7 @@ app.use(fileUpload());
 //body parser using middleware
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
+
 
 
 // Express Messages middleware
