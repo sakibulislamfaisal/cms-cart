@@ -1,22 +1,25 @@
 var express = require("express");
 var router = express.Router();
+var auth = require('../config/auth');
+var isAdmin = auth.isAdmin;
+
 
 // Get Page model
 var Page = require("../models/page");
 
 //Get Page Index
-router.get("/", function (req, res) {
+router.get("/", isAdmin, function (req, res) {
   Page.find({})
     .sort({ sorting: 1 })
     .exec(function (err, pages) {
       res.render("admin/pages", {
-        pages: pages,
+        pages: pages
       });
     });
 });
 
 //Get add Pages
-router.get("/add-page", function (req, res) {
+router.get("/add-page", isAdmin, function (req, res) {
   var title = "";
   var slug = "";
   var content = "";
@@ -24,7 +27,7 @@ router.get("/add-page", function (req, res) {
   res.render("admin/add_page", {
     title: title,
     slug: slug,
-    content: content,
+    content: content
   });
 });
 
@@ -45,7 +48,7 @@ router.post("/add-page", function (req, res) {
       errors: errors,
       title: title,
       slug: slug,
-      content: content,
+      content: content
     });
   } else {
     Page.findOne({ slug: slug }, function (err, page) {
@@ -66,7 +69,14 @@ router.post("/add-page", function (req, res) {
 
         page.save(function (err) {
           if (err) return console.log(err);
-          req.flash("success", "Page added!");
+          Page.find({}).sort({sorting: 1}).exec(function (err, pages) {
+            if (err) {
+                console.log(err);
+            } else {
+                req.app.locals.pages = pages;
+            }
+        });
+          req.flash("success", "Page Added Successfully!");
           res.redirect("/admin/pages");
         });
       }
@@ -76,29 +86,49 @@ router.post("/add-page", function (req, res) {
 
 
 
+// Sort pages function
+function sortPages(ids, callback) {
+  var count = 0;
 
-//Post Re-order Pages 
+  for (var i = 0; i < ids.length; i++) {
+      var id = ids[i];
+      count++;
+
+      (function (count) {
+          Page.findById(id, function (err, page) {
+              page.sorting = count;
+              page.save(function (err) {
+                  if (err)
+                      return console.log(err);
+                  ++count;
+                  if (count >= ids.length) {
+                      callback();
+                  }
+              });
+          });
+      })(count);
+
+  }
+}
+
+/*
+* POST reorder pages
+*/
 router.post('/reorder-pages', function (req, res) {
-    var ids = req.body['id[]'];
+  var ids = req.body['id[]'];
 
-   var count = 0;
-   for (var i = 0; i < ids.length; i++) {
-       var id = ids[i];
-       count++;
-
-       (function(count){
-            Page.findById(id, function(err,page){
-                page.sorting = count;
-                page.save(function(err){
-                    if(err)
-                    return console.log(err);
-                });
-            });
-       })(count);
-       
-   }
+  sortPages(ids, function () {
+      Page.find({}).sort({sorting: 1}).exec(function (err, pages) {
+          if (err) {
+              console.log(err);
+          } else {
+              req.app.locals.pages = pages;
+          }
+      });
+  });
 
 });
+
 
 //Get Edit Pages
 // router.get('/edit-page/:slug',  function (req, res) {
@@ -117,7 +147,7 @@ router.post('/reorder-pages', function (req, res) {
 
 // });
 
-router.get('/edit-page/:id',  function (req, res) {
+router.get('/edit-page/:id', isAdmin, function (req, res) {
 
     Page.findById(req.params.id, function (err, page) {
         if (err)
@@ -204,7 +234,7 @@ router.post('/edit-page/:id', function (req, res) {
 });
 
 //Delete Pages
-router.get('/delete-page/:id',  function (req, res) {
+router.get('/delete-page/:id', isAdmin, function (req, res) {
     Page.findByIdAndRemove(req.params.id, function (err) {
         if (err)
             return console.log(err);

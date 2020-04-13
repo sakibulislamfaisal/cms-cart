@@ -6,6 +6,7 @@ var bodyParser = require('body-parser');
 var session = require('express-session');
 var expressValidator = require('express-validator');
 const fileUpload = require('express-fileupload');
+var passport = require('passport');
 
 
 // Connect to db
@@ -69,12 +70,6 @@ app.use(bodyParser.json());
 
 
 
-// Express Messages middleware
-app.use(require('connect-flash')());
-app.use(function (req, res, next) {
-    res.locals.messages = require('express-messages')(req, res);
-    next();
-});
 
 
 // Express Session middleware
@@ -122,6 +117,28 @@ app.use(expressValidator({
 }));
 
 
+// Express Messages middleware
+app.use(require('connect-flash')());
+app.use(function (req, res, next) {
+    res.locals.messages = require('express-messages')(req, res);
+    next();
+});
+
+
+// Passport Config
+require('./config/passport')(passport);
+// Passport Middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+
+
+app.get('*', function(req,res,next) {
+    res.locals.cart = req.session.cart;
+    res.locals.user = req.user || null;
+    next();
+ });
+ 
 
 
 //checking working is or not
@@ -130,11 +147,19 @@ var pages = require('./routes/pages');
 var adminPages = require('./routes/admin_pages');
 var adminCategories = require('./routes/admin_categories.js');
 var adminProducts = require('./routes/admin_products.js');
+var products = require('./routes/products.js');
+var cart = require('./routes/cart.js');
+var users = require('./routes/users.js');
+
 
 app.use('/admin/pages',adminPages);
 app.use('/admin/categories', adminCategories);
 app.use('/admin/products', adminProducts);
+app.use('/products', products);
+app.use('/cart', cart);
+app.use('/users', users);
 app.use('/',pages);
+
 
 // Start the server
 var port = 3000;

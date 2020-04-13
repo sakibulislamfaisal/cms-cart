@@ -6,4 +6,7 @@ $(function(){
         if (!confirm('Are you want to sure to confirm delete'))
             return false;
     });
+    if ($("[data-fancybox]").length) {
+        $("[data-fancybox]").fancybox();
+    }
 });
