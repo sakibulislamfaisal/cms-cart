@@ -150,6 +150,7 @@ var adminProducts = require('./routes/admin_products.js');
 var products = require('./routes/products.js');
 var cart = require('./routes/cart.js');
 var users = require('./routes/users.js');
+var contact = require('./routes/contacts.js');
 
 
 app.use('/admin/pages',adminPages);
@@ -159,6 +160,7 @@ app.use('/products', products);
 app.use('/cart', cart);
 app.use('/users', users);
 app.use('/',pages);
+app.use('/contacts', contact);
 
 
 // Start the server
